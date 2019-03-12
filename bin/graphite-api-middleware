@@ -4,7 +4,7 @@ $:.unshift File.expand_path('../../lib',__FILE__)
 require 'graphite-api'
 require 'optparse'
 
-options = GraphiteAPI::Client.default_options.merge interval: 60
+options = GraphiteAPI::Client.default_options.merge interval: 60, pid: '/var/run/graphite-api-middleware.pid'
 
 OptionParser.new do |opts|
   opts.banner = "GraphiteAPI Middleware Server"
