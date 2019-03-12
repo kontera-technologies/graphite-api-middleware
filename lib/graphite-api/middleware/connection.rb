@@ -31,16 +31,16 @@ module GraphiteAPI::Middleware
 
     def post_init
       @client_id = peername
-      Logger.debug [:middleware, :connecting, client_id]
+      GraphiteAPI::Logger.debug [:middleware, :connecting, client_id]
     end
 
     def receive_data data
-      Logger.debug [:middleware, :message, client_id, data]
+      GraphiteAPI::Logger.debug [:middleware, :message, client_id, data]
       buffer.stream data, client_id
     end
 
     def unbind
-      Logger.debug [:middleware, :disconnecting, client_id]
+      GraphiteAPI::Logger.debug [:middleware, :disconnecting, client_id]
     end
 
     def peername
