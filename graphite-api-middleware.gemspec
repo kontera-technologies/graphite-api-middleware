@@ -13,10 +13,10 @@ Gem::Specification.new do |spec|
   spec.homepage      = "https://github.com/kontera-technologies/graphite-api-middleware"
   spec.license       = 'LGPL-3.0'
 
-  spec.bindir        = "exe"
-  spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
-  spec.require_paths = ["lib"]
   spec.files         = %w(LICENSE.txt README.md Rakefile) + Dir.glob("{bin,lib,test,tasks}/**/*")
+  spec.bindir        = "bin"
+  spec.executables   = %w(graphite-api-middleware)
+  spec.require_path = "lib"
 
   spec.required_ruby_version = '>= 2.2'
   spec.add_runtime_dependency 'eventmachine','>= 0.3.3'
