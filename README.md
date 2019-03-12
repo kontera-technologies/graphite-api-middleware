@@ -21,39 +21,37 @@ gem install graphite-api-middleware
 
 ## Usage
 * After installing this gem, the `graphite-api-middleware` command should be available.
+  ```
+  [root@graphite-middleware-node]# graphite-api-middleware --help
 
-```
-[root@graphite-middleware-node]# graphite-api-middleware --help
+  GraphiteAPI Middleware Server
 
-GraphiteAPI Middleware Server
+  Usage: graphite-api-middleware [options]
+      -g, --graphite HOST:PORT         graphite host, in HOST:PORT format (can be specified multiple times)
+      -p, --port PORT                  listening port (default 2003)
+      -l, --log-file FILE              log file
+      -L, --log-level LEVEL            log level (default warn)
+      -P, --pid-file FILE              pid file (default /var/run/graphite-api-middleware.pid)
+      -d, --daemonize                  run in background
+      -i, --interval INT               report every X seconds (default 60)
+      -s, --slice SECONDS              send to graphite in X seconds slices (default 60)
+      -r, --reanimation HOURS          reanimate records that are younger than X hours, please see README
+      -m, --aggregation-method method  The aggregation method (sum, avg or replace) for multiple reports in the same time slice (default sum)
 
-Usage: graphite-api-middleware [options]
-    -g, --graphite HOST:PORT         graphite host, in HOST:PORT format (can be specified multiple times)
-    -p, --port PORT                  listening port (default 2003)
-    -l, --log-file FILE              log file
-    -L, --log-level LEVEL            log level (default warn)
-    -P, --pid-file FILE              pid file (default /var/run/graphite-api-middleware.pid)
-    -d, --daemonize                  run in background
-    -i, --interval INT               report every X seconds (default 60)
-    -s, --slice SECONDS              send to graphite in X seconds slices (default 60)
-    -r, --reanimation HOURS          reanimate records that are younger than X hours, please see README
-    -m, --aggregation-method method  The aggregation method (sum, avg or replace) for multiple reports in the same time slice (default sum)
-
-More Info @ https://github.com/kontera-technologies/graphite-api-middleware
-```
+  More Info @ https://github.com/kontera-technologies/graphite-api-middleware
+  ```
 
 * launch **GraphiteAPI-Middleware** daemon
-
-```
-[root@graphite-middleware-node]# graphite-api-middleware          \
-  --port 2005                                                     \
-  --interval 60                                                   \
-  --log-level debug                                               \
-  --log-file /tmp/graphite-api-middleware.out                     \
-  --daemonize                                                     \
-  --graphite graphite-server:2003                                 \
-  --graphite graphite-backup-server:2003
-```
+  ```
+  [root@graphite-middleware-node]# graphite-api-middleware          \
+    --port 2005                                                     \
+    --interval 60                                                   \
+    --log-level debug                                               \
+    --log-file /tmp/graphite-api-middleware.out                     \
+    --daemonize                                                     \
+    --graphite graphite-server:2003                                 \
+    --graphite graphite-backup-server:2003
+  ```
 
 * Send metrics via **UDP/TCP sockets**
 
