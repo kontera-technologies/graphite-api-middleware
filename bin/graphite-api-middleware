@@ -2,77 +2,74 @@
 $:.unshift File.expand_path('../../lib',__FILE__)
 
 require 'graphite-api'
-require 'optparse'
+require 'docopt'
 
 options = GraphiteAPI::Client.default_options.merge interval: 60, pid: '/var/run/graphite-api-middleware.pid'
 
-OptionParser.new do |opts|
-  opts.banner = "GraphiteAPI Middleware Server"
-  opts.define_head "Usage: graphite-middleware [options]"
-  opts.define_head ""
+doc = <<DOCOPT
+GraphiteAPI Middleware Server
+Usage:
+  #{__FILE__} <graphite-uri>...
+              [-d | --daemonize]
+              [-p=<port> | --port=<port>]
+              [-l=<log-file> | --log-file=<log-file>]
+              [-L=<log-level> | --log-level=<log-leve>]
+              [-P=<pid-file> | --pid-file=<pid-file>]
+              [-i=<interval> | --interval=<interval>]
+              [-s=<slice> | --slice=<slice>]
+              [-r=<reanimation> | --reanimation=<reanimation>]
+              [-m=<aggregation-method> | --aggregation-method=<aggregation-method>]
+  #{__FILE__} -v | --version
+  #{__FILE__} -h | --help
 
-  opts.on("-g", "--graphite [udp,tcp]://host:port", "can be specified multiple times") do |graphite|
-    options[:backends].push graphite
-  end
+Arguments:
+  <graphite-uri> List of URIs (seperated by spaces) that point to graphite API servers [udp,tcp]:\/\/host:port
 
-  opts.on("-p", "--port PORT","listening port (default #{options[:port]})") do |port|
-    options[:port] = port
-  end
+Options:
+  -h, --help                                                         Show this screen.
+  -v, --version                                                      Show version.
+  -d, --daemonize                                                    Run as a daemon.
+  -p=<port>, --port=<port>                                           Listening port for this server.
+  -l=<log-file>, --log-file=<log-file>                               Listening port for this server.
+  -L=<log-level>, --log-level=<log-level>                            Log level (defaults to warn).
+  -P=<pid-file>, --pid-file=<pid-file>                               Path to the PID to use (defaults to #{options[:pid]}).
+  -i=<interval>, --interval=<interval>                               The interval to wait between each report (defaults to #{options[:interval]}).
+  -s=<slice>, --slice=<slice>                                        This middleware will send reports to graphite in slices of X seconds (defaults to #{options[:slice]}).
+  -r=<reanimation>, --reanimation=<reanimation>                      Reanimate records that are younger than X hours, please see README.
+  -m=<aggregation-method>, --aggregation-method=<aggregation-method> The aggregation method (sum, avg or replace) for multiple reports in the same time slice (defaults to #{options[:default_aggregation_method]}).
 
-  opts.on("-l", "--log-file FILE","log file") do |file|
-    options[:log_file] = File::expand_path(file)
-  end
-
-  opts.on("-L", "--log-level LEVEL","log level (default warn)") do |level|
-    options[:log_level] = level
-  end
-
-  opts.on("-P", "--pid-file FILE","pid file (default #{options[:pid]})") do |pid_file|
-    options[:pid] = pid_file
-  end
-
-  opts.on("-d", "--daemonize","run in background") do
-    options[:daemonize] = true
-  end
-
-  opts.on("-i", "--interval INT","report every X seconds (default #{options[:interval]})") do |x_seconds|
-    options[:interval] = x_seconds.to_i if x_seconds.to_i > 0
-  end
-
-  opts.on("-s", "--slice SECONDS","send to graphite in X seconds slices (default #{options[:slice]})") do |slice|
-    options[:slice] = slice.to_i if slice.to_i >= 0
-  end
-
-  opts.on("-r", "--reanimation HOURS","reanimate records that are younger than X hours, please see README") do |exp|
-    (options[:cache] = exp.to_i * 3600) if exp.to_i > 0
-  end
-
-  opts.on("-m", "--aggregation-method method","The aggregation method (sum, avg or replace) for multiple reports in the same time slice (default sum)") do |exp|
-    raise "Invalid aggregation method. Valid values are sum, avg or replace." unless ["sum", "avg", "replace"].include? exp
-    options[:default_aggregation_method] = exp.to_sym
-  end
-
-  opts.on("-v", "--version","Show version and exit") do |exp|
-    puts "Version #{GraphiteAPI.version}"
-    exit
-  end
-
-  opts.separator ""
-  opts.separator "More Info @ https://github.com/kontera-technologies/graphite-api"
-  opts.separator ""
-
-  opts.define_tail ""
-  opts.define_tail ""
-end.parse! ARGV
-
-abort "You must specify at least one graphite host" if options[:backends].empty?
-
-GraphiteAPI::Logger.init Hash[[:dev,:level].zip options.values_at(:log_file, :log_level) ]
+More Info @ https://github.com/kontera-technologies/graphite-api-middleware
+DOCOPT
 
 begin
-  Process.daemon if options[:daemonize]
-  GraphiteAPI::Middleware::Connection.start options
+  opts = Docopt::docopt(doc)
+
+  if opts["--version"]
+    puts "GraphiteAPI Middleware #{GraphiteAPI::Middleware::VERSION}"
+  else
+    raise "Invalid aggregation method. Valid values are sum, avg or replace." unless ["sum", "avg", "replace", nil].include? opts["--aggregation-method"]
+
+    options[:backends] = opts["<graphite-uri>"]
+    options[:port] = opts["--port"] if opts["--port"]
+    options[:log_file] = File::expand_path opts["--log-file"] if opts["--log-file"]
+    options[:log_level] = opts["--log-level"] if opts["--log-level"]
+    options[:pid] = opts["<pid>"] if opts["<pid>"]
+    options[:daemonize] = opts["--daemonize"]
+    options[:interval] = opts["--interval"].to_i if opts["--interval"].to_i > 0
+    options[:slice] = opts["--slice"].to_i if opts["--slice"].to_i > 0
+    options[:cache] = opts["--cache"].to_i * 3600 if opts["--cache"].to_i > 0
+    options[:default_aggregation_method] = opts["--aggregation-method"].to_sym if opts["--aggregation-method"]
+
+    GraphiteAPI::Logger.init Hash[[:dev,:level].zip options.values_at(:log_file, :log_level) ]
+
+    Process.daemon if options[:daemonize]
+    GraphiteAPI::Middleware::Connection.start options
+  end
+rescue Docopt::Exit => e
+  puts e.message
 rescue Interrupt
   GraphiteAPI::Logger.info "Shutting down..."
   Zscheduler.stop
+rescue Exception => e
+  puts (Docopt::Exit.new e.message).message
 end
