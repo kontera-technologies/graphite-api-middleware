@@ -1,43 +1,100 @@
-# Graphite::Api::Middleware
+# Description
+**GraphiteAPI Middleware** provides a way to interacting with **Graphite's Carbon Daemon**, by setting up the **GraphiteAPI-Middleware** daemon. This method implements Graphite's [plaintext protocol](http://graphite.readthedocs.org/en/1.0/feeding-carbon.html) for communication.
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/graphite-api/middleware`. To experiment with that code, run `bin/console` for an interactive prompt.
+## Key Features
+* **Multiple Graphite Servers Support** - GraphiteAPI-Middleware supports sending aggregated data to multiple graphite servers, in a multiplex fashion, useful for large data centers and backup purposes
+* **Reanimation mode** - support cases which the same keys (same timestamps as well) can be received simultaneously and asynchronously from multiple input sources, in these cases GraphiteAPI-Middleware will "reanimate" old records (records that were already sent to Graphite server), and will send the sum of the reanimated record value + the value of the record that was just received to the graphite server; this new summed record should override the key with the new value on Graphite database.
+* **non-blocking I/O** ( EventMachine aware ).
+* **Thread-Safe** client.
 
-TODO: Delete this and the text above, and describe your gem
+## Status
+[![Gem Version](https://badge.fury.io/rb/graphite-api-middleware.svg)](https://badge.fury.io/rb/graphite-api-middleware)
+[![Build Status](https://travis-ci.org/kontera-technologies/graphite-api-middleware.svg?branch=master)](https://travis-ci.org/kontera-technologies/graphite-api-middleware)
+[![Test Coverage](https://codecov.io/gh/kontera-technologies/graphite-api-middleware/branch/master/graph/badge.svg)](https://codecov.io/gh/kontera-technologies/graphite-api-middleware)
 
 ## Installation
+Install stable version
 
-Add this line to your application's Gemfile:
-
-```ruby
-gem 'graphite-api-middleware'
+```
+gem install graphite-api-middleware
 ```
 
-And then execute:
-
-    $ bundle
-
-Or install it yourself as:
-
-    $ gem install graphite-api-middleware
-
 ## Usage
+* After installing this gem, the `graphite-api-middleware` command should be available.
 
-TODO: Write usage instructions here
+```
+[root@graphite-middleware-node]# graphite-api-middleware --help
+
+GraphiteAPI Middleware Server
+
+Usage: graphite-api-middleware [options]
+    -g, --graphite HOST:PORT         graphite host, in HOST:PORT format (can be specified multiple times)
+    -p, --port PORT                  listening port (default 2003)
+    -l, --log-file FILE              log file
+    -L, --log-level LEVEL            log level (default warn)
+    -P, --pid-file FILE              pid file (default /var/run/graphite-api-middleware.pid)
+    -d, --daemonize                  run in background
+    -i, --interval INT               report every X seconds (default 60)
+    -s, --slice SECONDS              send to graphite in X seconds slices (default 60)
+    -r, --reanimation HOURS          reanimate records that are younger than X hours, please see README
+    -m, --aggregation-method method  The aggregation method (sum, avg or replace) for multiple reports in the same time slice (default sum)
+
+More Info @ https://github.com/kontera-technologies/graphite-api-middleware
+```
+
+* launch **GraphiteAPI-Middleware** daemon
+
+```
+[root@graphite-middleware-node]# graphite-api-middleware          \
+  --port 2005                                                     \
+  --interval 60                                                   \
+  --log-level debug                                               \
+  --log-file /tmp/graphite-api-middleware.out                     \
+  --daemonize                                                     \
+  --graphite graphite-server:2003                                 \
+  --graphite graphite-backup-server:2003
+```
+
+* Send metrics via **UDP/TCP sockets**
+
+```
+[root@graphite-middleware-node] telnet localhost 2005
+Trying 127.0.0.1...
+Connected to localhost.
+Escape character is '^]'.
+example.middleware.value 10.2 1335008343
+example.middleware.value2 99 1334929231
+^C
+[root@graphite-middleware-node]
+```
+
+## Example Setup
+[![example setup](https://raw.github.com/kontera-technologies/graphite-api/master/examples/middleware_t1.png)]
 
 ## Development
+After checking out the repo, run `bundle install` to install dependencies.
+Before submitting a pull request, run `rake test` to run the tests.
 
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake test` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
+To install this gem onto your local machine, run `bundle exec rake install`.
 
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
+### Releasing a new version of this gem
+1. Run `gem bump -v [major|minor|patch|alpha|beta|pre]` to bump the version number of this gem and create a new git commit for it.
+2. Run `git push` to push the changes.
+3. Run `gem tag` to create a git tag for this version.
+4. Run `git push --tags` to push the tag to git.
+5. Run `gem release` to build the gem and push it to rubygems.
 
 ## Contributing
+Bug reports and pull requests are welcome on GitHub at https://github.com/Eyal_Shalev/graphite-api-middleware. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the Contributor Covenant code of conduct.
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/Eyal_Shalev/graphite-api-middleware. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [Contributor Covenant](http://contributor-covenant.org) code of conduct.
+## Bugs
+If you find a bug, feel free to report it @ our [issues tracker](https://github.com/kontera-technologies/graphite-api-middleware/issues) on github.
 
 ## License
-
-The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
+It is free software, and may be redistributed under the terms specified in [LICENSE](/LICENSE.txt).
 
 ## Code of Conduct
+Everyone interacting in the graphite-api-middleware project’s codebases, issue trackers, chat rooms and mailing lists is expected to follow the code of conduct.
 
-Everyone interacting in the Graphite::Api::Middleware project’s codebases, issue trackers, chat rooms and mailing lists is expected to follow the [code of conduct](https://github.com/Eyal_Shalev/graphite-api-middleware/blob/master/CODE_OF_CONDUCT.md).
+## Warranty
+This software is provided “as is” and without any express or implied warranties, including, without limitation, the implied warranties of merchantability and fitness for a particular purpose.
