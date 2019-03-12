@@ -1,4 +1,3 @@
-
 lib = File.expand_path("../lib", __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require "graphite-api/middleware/version"
@@ -9,7 +8,8 @@ Gem::Specification.new do |spec|
   spec.authors       = ["Eran Levi", "Eyal Shalev"]
   spec.email         = ["eran@kontera.com", "eyalsh@gmail.com"]
 
-  spec.summary       = %q{Interact with Graphite's Carbon Daemon through this middleware}
+  spec.summary       = %q{Aggregator daemon for Graphite API}
+  spec.description   = %q{Interact with Graphite's Carbon Daemon through this middleware}
   spec.homepage      = "https://github.com/kontera-technologies/graphite-api-middleware"
   spec.license       = 'LGPL-3.0'
 
