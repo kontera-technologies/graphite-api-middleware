@@ -11,7 +11,7 @@ Gem::Specification.new do |spec|
 
   spec.summary       = %q{Interact with Graphite's Carbon Daemon through this middleware}
   spec.homepage      = "https://github.com/kontera-technologies/graphite-api-middleware"
-  spec.license       = "MIT"
+  spec.license       = 'LGPL-3.0'
 
   # Specify which files should be added to the gem when it is released.
   # The `git ls-files -z` loads the files in the RubyGem that have been added into git.
