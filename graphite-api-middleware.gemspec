@@ -18,11 +18,10 @@ Gem::Specification.new do |spec|
   spec.executables   = %w(graphite-api-middleware)
   spec.require_path = "lib"
 
-  spec.required_ruby_version = '>= 2.2'
+  spec.required_ruby_version = '>= 2.3'
   spec.add_runtime_dependency 'eventmachine','>= 0.3.3'
   spec.add_runtime_dependency 'graphite-api', '>= 0.4.0'
 
-  spec.add_development_dependency "bundler", "~> 1.17"
   spec.add_development_dependency "rake", "~> 10.0"
   spec.add_development_dependency "minitest", "~> 5.0"
   spec.add_development_dependency "simplecov", "~> 0.16"
