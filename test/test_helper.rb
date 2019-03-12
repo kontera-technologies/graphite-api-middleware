@@ -15,19 +15,20 @@ end
 
 require "graphite-api/middleware"
 
-module GraphiteAPI
+module GraphiteAPI::Tests
   module Functional
     class TestCase < Minitest::Test
-      def random_non_repeating_port
-        @ports ||= (1000..9999).to_a.shuffle
-        @ports.pop
-      end
-
-      def stop_em_if_running
-        EM.stop if EM.reactor_running?
-        sleep 0.1 while EM.reactor_running?
-      end
     end
+  end
+
+  def self.random_non_repeating_port
+    @ports ||= (1000..9999).to_a.shuffle
+    @ports.pop
+  end
+
+  def self.stop_em_if_running
+    EM.stop if EM.reactor_running?
+    sleep 0.1 while EM.reactor_running?
   end
 
   module MockServer
