@@ -54,17 +54,16 @@ gem install graphite-api-middleware
   ```
 
 * Send metrics via **UDP/TCP sockets**
-
-```
-[root@graphite-middleware-node] telnet localhost 2005
-Trying 127.0.0.1...
-Connected to localhost.
-Escape character is '^]'.
-example.middleware.value 10.2 1335008343
-example.middleware.value2 99 1334929231
-^C
-[root@graphite-middleware-node]
-```
+  ```
+  [root@graphite-middleware-node] telnet localhost 2005
+  Trying 127.0.0.1...
+  Connected to localhost.
+  Escape character is '^]'.
+  example.middleware.value 10.2 1335008343
+  example.middleware.value2 99 1334929231
+  ^C
+  [root@graphite-middleware-node]
+  ```
 
 ## Example Setup
 [![example setup](https://raw.github.com/kontera-technologies/graphite-api/master/examples/middleware_t1.png)]
