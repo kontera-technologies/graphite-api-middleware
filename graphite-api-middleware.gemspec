@@ -19,7 +19,10 @@ Gem::Specification.new do |spec|
   spec.require_path = "lib"
 
   spec.required_ruby_version = '>= 2.3'
+
+  spec.add_runtime_dependency 'docopt'
   spec.add_runtime_dependency 'eventmachine','>= 0.3.3'
+  spec.add_runtime_dependency 'zscheduler', '>= 0.0.7'
   spec.add_runtime_dependency 'graphite-api', '>= 0.4.0'
 
   spec.add_development_dependency "rake", "~> 10.0"
