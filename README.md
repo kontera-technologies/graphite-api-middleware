@@ -66,7 +66,7 @@ gem install graphite-api-middleware
   ```
 
 ## Example Setup
-[![example setup](https://raw.github.com/kontera-technologies/graphite-api/master/examples/middleware_t1.png)]
+![example setup](https://raw.github.com/kontera-technologies/graphite-api/master/examples/middleware_t1.png)
 
 ## Development
 After checking out the repo, run `bundle install` to install dependencies.
