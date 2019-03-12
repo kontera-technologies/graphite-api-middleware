@@ -71,7 +71,7 @@ GraphiteAPI::Logger.init Hash[[:dev,:level].zip options.values_at(:log_file, :lo
 
 begin
   Process.daemon if options[:daemonize]
-  GraphiteAPI::Middleware.start options
+  GraphiteAPI::Middleware::Connection.start options
 rescue Interrupt
   GraphiteAPI::Logger.info "Shutting down..."
   Zscheduler.stop
