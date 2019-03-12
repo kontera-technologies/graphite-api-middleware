@@ -18,7 +18,7 @@ module GraphiteAPI::Tests
       end
 
       def start_middleware middleware_port, mock_server_port, aggregation_method=nil, interval=2
-        options = %W(--port #{middleware_port} --graphite tcp://localhost:#{mock_server_port} --interval #{interval} -L error)
+        options = %W(tcp://localhost:#{mock_server_port} --port #{middleware_port} --interval #{interval} -L error)
         options += ["--aggregation-method", aggregation_method] if aggregation_method
         @pid = Process.spawn("ruby", MIDDLEWARE_BIN_FILE, *options)
         sleep MIDDLEWARE_STARTUP_WAIT
