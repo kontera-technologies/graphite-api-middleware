@@ -1,2 +1,2 @@
 require "graphite-api/middleware/version"
-require "graphite-api/middleware/connection"
+require "graphite-api/middleware/server"

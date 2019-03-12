@@ -6,7 +6,7 @@
 # - Data Manipulation
 # -----------------------------------------------------
 # Usage:
-#   GraphiteAPI::Middleware::Connection.start(options)
+#   GraphiteAPI::Middleware::Server.start(options)
 #
 # Options:
 #   graphite         target graphite hostname
@@ -21,7 +21,7 @@ require 'eventmachine'
 require 'socket'
 
 module GraphiteAPI::Middleware
-  class Connection < EventMachine::Connection
+  class Server < EventMachine::Connection
 
     def initialize buffer
       @buffer = buffer and super

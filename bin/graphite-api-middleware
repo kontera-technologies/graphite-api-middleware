@@ -4,12 +4,13 @@ $:.unshift File.expand_path('../../lib',__FILE__)
 require 'graphite-api'
 require 'docopt'
 
+FILE_NAME = File.basename(__FILE__)
 options = GraphiteAPI::Client.default_options.merge interval: 60, pid: '/var/run/graphite-api-middleware.pid'
 
 doc = <<DOCOPT
 GraphiteAPI Middleware Server
 Usage:
-  #{__FILE__} <graphite-uri>...
+  #{FILE_NAME} <graphite-uri>...
               [-d | --daemonize]
               [-p=<port> | --port=<port>]
               [-l=<log-file> | --log-file=<log-file>]
@@ -19,8 +20,8 @@ Usage:
               [-s=<slice> | --slice=<slice>]
               [-r=<reanimation> | --reanimation=<reanimation>]
               [-m=<aggregation-method> | --aggregation-method=<aggregation-method>]
-  #{__FILE__} -v | --version
-  #{__FILE__} -h | --help
+  #{FILE_NAME} -v | --version
+  #{FILE_NAME} -h | --help
 
 Arguments:
   <graphite-uri> List of URIs (seperated by spaces) that point to graphite API servers [udp,tcp]:\/\/host:port
@@ -46,30 +47,31 @@ begin
 
   if opts["--version"]
     puts "GraphiteAPI Middleware #{GraphiteAPI::Middleware::VERSION}"
-  else
-    raise "Invalid aggregation method. Valid values are sum, avg or replace." unless ["sum", "avg", "replace", nil].include? opts["--aggregation-method"]
-
-    options[:backends] = opts["<graphite-uri>"]
-    options[:port] = opts["--port"] if opts["--port"]
-    options[:log_file] = File::expand_path opts["--log-file"] if opts["--log-file"]
-    options[:log_level] = opts["--log-level"] if opts["--log-level"]
-    options[:pid] = opts["<pid>"] if opts["<pid>"]
-    options[:daemonize] = opts["--daemonize"]
-    options[:interval] = opts["--interval"].to_i if opts["--interval"].to_i > 0
-    options[:slice] = opts["--slice"].to_i if opts["--slice"].to_i > 0
-    options[:cache] = opts["--cache"].to_i * 3600 if opts["--cache"].to_i > 0
-    options[:default_aggregation_method] = opts["--aggregation-method"].to_sym if opts["--aggregation-method"]
-
-    GraphiteAPI::Logger.init Hash[[:dev,:level].zip options.values_at(:log_file, :log_level) ]
-
-    Process.daemon if options[:daemonize]
-    GraphiteAPI::Middleware::Connection.start options
+    exit 0
   end
+
+  raise "Invalid aggregation method. Valid values are sum, avg or replace." unless ["sum", "avg", "replace", nil].include? opts["--aggregation-method"]
+
+  options[:backends] = opts["<graphite-uri>"]
+  options[:port] = opts["--port"] if opts["--port"]
+  options[:log_file] = File::expand_path opts["--log-file"] if opts["--log-file"]
+  options[:log_level] = opts["--log-level"] if opts["--log-level"]
+  options[:pid] = opts["<pid>"] if opts["<pid>"]
+  options[:daemonize] = opts["--daemonize"]
+  options[:interval] = opts["--interval"].to_i if opts["--interval"].to_i > 0
+  options[:slice] = opts["--slice"].to_i if opts["--slice"].to_i > 0
+  options[:cache] = opts["--cache"].to_i * 3600 if opts["--cache"].to_i > 0
+  options[:default_aggregation_method] = opts["--aggregation-method"].to_sym if opts["--aggregation-method"]
+
+  GraphiteAPI::Logger.init Hash[[:dev,:level].zip options.values_at(:log_file, :log_level) ]
+
+  Process.daemon if options[:daemonize]
+  GraphiteAPI::Middleware::Server.start options
 rescue Docopt::Exit => e
   puts e.message
 rescue Interrupt
   GraphiteAPI::Logger.info "Shutting down..."
   Zscheduler.stop
-rescue Exception => e
+rescue StandardError => e
   puts (Docopt::Exit.new e.message).message
 end
