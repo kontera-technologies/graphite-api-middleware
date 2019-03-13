@@ -1,14 +1,14 @@
 #!/usr/bin/env ruby
 $:.unshift File.expand_path('../../lib',__FILE__)
 
-require 'graphite-api'
+require 'graphite-api-middleware'
 require 'docopt'
 
 FILE_NAME = File.basename(__FILE__)
-options = GraphiteAPI::Client.default_options.merge interval: 60, pid: '/var/run/graphite-api-middleware.pid'
+options = GraphiteApiMiddleware::Server.default_options
 
 doc = <<DOCOPT
-GraphiteAPI Middleware Server
+Graphite API Middleware Server
 Usage:
   #{FILE_NAME} <graphite-uri>...
               [-d | --daemonize]
@@ -46,7 +46,7 @@ begin
   opts = Docopt::docopt(doc)
 
   if opts["--version"]
-    puts "GraphiteAPI Middleware #{GraphiteAPI::Middleware::VERSION}"
+    puts "GraphiteAPI Middleware #{GraphiteApiMiddleware::VERSION}"
     exit 0
   end
 
@@ -63,14 +63,14 @@ begin
   options[:cache] = opts["--cache"].to_i * 3600 if opts["--cache"].to_i > 0
   options[:default_aggregation_method] = opts["--aggregation-method"].to_sym if opts["--aggregation-method"]
 
-  GraphiteAPI::Logger.init Hash[[:dev,:level].zip options.values_at(:log_file, :log_level) ]
-
+  logger = Logger.new options[:log_file] ||  STDOUT
+  logger.level= Logger.const_get options[:log_level].to_s.upcase
   Process.daemon if options[:daemonize]
-  GraphiteAPI::Middleware::Server.start options
+  GraphiteApiMiddleware::Server.start options, logger
 rescue Docopt::Exit => e
   puts e.message
 rescue Interrupt
-  GraphiteAPI::Logger.info "Shutting down..."
+  logger.info "Shutting down..."
   Zscheduler.stop
 rescue StandardError => e
   puts (Docopt::Exit.new e.message).message

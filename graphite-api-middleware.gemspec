@@ -1,10 +1,10 @@
 lib = File.expand_path("../lib", __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require "graphite-api/middleware/version"
+require "graphite-api-middleware/version"
 
 Gem::Specification.new do |spec|
   spec.name          = "graphite-api-middleware"
-  spec.version       = GraphiteAPI::Middleware::VERSION
+  spec.version       = GraphiteAPIMiddleware::VERSION
   spec.authors       = ["Eran Levi", "Eyal Shalev"]
   spec.email         = ["eran@kontera.com", "eyalsh@gmail.com"]
 
