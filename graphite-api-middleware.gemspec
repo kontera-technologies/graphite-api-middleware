@@ -23,7 +23,7 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency 'docopt'
   spec.add_runtime_dependency 'eventmachine','>= 0.3.3'
   spec.add_runtime_dependency 'timers', '~> 4.3'
-  spec.add_runtime_dependency 'graphite-api', '>= 0.4.0'
+  spec.add_runtime_dependency 'graphite-api', '~>1.2'
 
   spec.add_development_dependency "rake", "~> 10.0"
   spec.add_development_dependency "minitest", "~> 5.0"
