@@ -16,8 +16,9 @@ module GraphiteApiMiddleware::Tests
       Utils.stop_em_if_running
     end
 
-    def start_middleware middleware_port, mock_server_port, aggregation_method=nil, interval=2
-      options = %W(tcp://localhost:#{mock_server_port} --port #{middleware_port} --interval #{interval} -L error)
+    def start_middleware middleware_port, servers, aggregation_method=nil, interval=2
+      options = Array(servers)
+      options += %W(--port #{middleware_port} --interval #{interval} -L error)
       options += ["--aggregation-method", aggregation_method] if aggregation_method
       @pid = Process.spawn("ruby", MIDDLEWARE_BIN_FILE, *options)
       sleep MIDDLEWARE_STARTUP_WAIT
@@ -29,7 +30,7 @@ module GraphiteApiMiddleware::Tests
     end
 
     def test_with_defaults
-      start_middleware @middleware_port, @mock_server_port
+      start_middleware @middleware_port, "tcp://localhost:#{@mock_server_port}"
       EventMachine.run {
         EventMachine.start_server("0.0.0.0", @mock_server_port, MockServer, @data)
         socket = TCPSocket.new("0.0.0.0", @middleware_port)
@@ -49,8 +50,30 @@ module GraphiteApiMiddleware::Tests
       assert_expected_equals_data expected
     end
 
+    def test_with_multiple_backends
+      backend_ports = [@mock_server_port, Utils.random_non_repeating_port]
+      start_middleware @middleware_port, backend_ports.map { |port| "tcp://localhost:#{port}" }
+      data_sets = backend_ports.zip([[],[]])
+      EventMachine.run {
+        data_sets.map { |port, data| EventMachine.start_server("0.0.0.0", port, MockServer, data) }
+        socket = TCPSocket.new("0.0.0.0", @middleware_port)
+        1.upto(1000) do
+          socket.puts("shuki.tuki1 1.1 123456789\n")
+          socket.puts("shuki.tuki2 10 123456789\n")
+          socket.puts("shuki.tuki3 10 123456789\n")
+        end
+        EventMachine::Timer.new(EM_STOP_AFTER, &EM.method(:stop))
+      }
+      expected = [
+        "shuki.tuki1 1100.0 123456780",
+        "shuki.tuki2 10000.0 123456780",
+        "shuki.tuki3 10000.0 123456780"
+      ]
+      data_sets.each { |_,data| assert_expected_equals_data expected, data }
+    end
+
     def test_with_avg
-      start_middleware @middleware_port, @mock_server_port, 'avg'
+      start_middleware @middleware_port, "tcp://localhost:#{@mock_server_port}", 'avg'
       EventMachine.run {
         EventMachine.start_server("0.0.0.0", @mock_server_port, MockServer, @data)
         socket = TCPSocket.new("0.0.0.0", @middleware_port)
@@ -65,7 +88,7 @@ module GraphiteApiMiddleware::Tests
     end
 
     def test_with_replace
-      start_middleware @middleware_port, @mock_server_port, 'replace'
+      start_middleware @middleware_port, "tcp://localhost:#{@mock_server_port}", 'replace'
       EventMachine.run {
         EventMachine.start_server("0.0.0.0", @mock_server_port, MockServer, @data)
         socket = TCPSocket.new("0.0.0.0", @middleware_port)
@@ -79,8 +102,8 @@ module GraphiteApiMiddleware::Tests
       assert_expected_equals_data ["shuki.tuki1 5.0 123456780"]
     end
 
-    def assert_expected_equals_data expected
-      assert_equal expected, @data.map {|o| o.split("\n")}.flatten(1).map(&:strip)
+    def assert_expected_equals_data expected, data=@data
+      assert_equal expected, data.map {|o| o.split("\n")}.flatten(1).map(&:strip)
     end
   end
 end
