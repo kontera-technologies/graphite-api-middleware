@@ -25,12 +25,12 @@ require 'logger'
 module GraphiteApiMiddleware
   class Server < EventMachine::Connection
 
-    def initialize buffer, logger
-      @buffer = buffer and super
+    def initialize client, logger
+      @client = client
       @logger = logger
     end
 
-    attr_reader :buffer, :client_id
+    attr_reader :client, :client_id
 
     def post_init
       @client_id = peername
@@ -39,11 +39,12 @@ module GraphiteApiMiddleware
 
     def receive_data data
       @logger.debug [:middleware, :message, client_id, data]
-      buffer.stream data, client_id
+      client.stream data, client_id
     end
 
     def unbind
       @logger.debug [:middleware, :disconnecting, client_id]
+      client.cancel
     end
 
     def peername
@@ -62,20 +63,17 @@ module GraphiteApiMiddleware
         GraphiteAPI::Logger.logger = logger
         logger.info "Server running on port #{options[:port]}"
 
-        buffer = GraphiteAPI::Buffer.new options
-        group  = GraphiteAPI::Connector::Group.new options
+        client = GraphiteAPI::Client.new options
 
         # Starting server
-        [:start_server, :open_datagram_socket].each do |m|
-          EventMachine.send(m, '0.0.0.0', options[:port], self, buffer, logger)
+        [:start_server, :open_datagram_socket].each do |method_name|
+          EventMachine.send(method_name, '0.0.0.0', options[:port], self, client, logger)
         end
-
-        # Send metrics to graphite every X seconds
-        Zscheduler.every(options[:interval], :on_shutdown => true) do
-          group.publish buffer.pull :string if buffer.new_records?
-        end
-
       end
+    end
+
+    def self.stop
+      EventMachine.stop
     end
 
   end

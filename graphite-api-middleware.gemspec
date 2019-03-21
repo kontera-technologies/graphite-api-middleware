@@ -4,7 +4,7 @@ require "graphite-api-middleware/version"
 
 Gem::Specification.new do |spec|
   spec.name          = "graphite-api-middleware"
-  spec.version       = GraphiteAPIMiddleware::VERSION
+  spec.version       = GraphiteApiMiddleware::VERSION
   spec.authors       = ["Eran Levi", "Eyal Shalev"]
   spec.email         = ["eran@kontera.com", "eyalsh@gmail.com"]
 
@@ -22,7 +22,7 @@ Gem::Specification.new do |spec|
 
   spec.add_runtime_dependency 'docopt'
   spec.add_runtime_dependency 'eventmachine','>= 0.3.3'
-  spec.add_runtime_dependency 'zscheduler', '>= 0.0.7'
+  spec.add_runtime_dependency 'timers', '~> 4.3'
   spec.add_runtime_dependency 'graphite-api', '>= 0.4.0'
 
   spec.add_development_dependency "rake", "~> 10.0"

@@ -52,7 +52,7 @@ begin
 
   raise "Invalid aggregation method. Valid values are sum, avg or replace." unless ["sum", "avg", "replace", nil].include? opts["--aggregation-method"]
 
-  options[:backends] = opts["<graphite-uri>"]
+  options[:graphite] = opts["<graphite-uri>"]
   options[:port] = opts["--port"] if opts["--port"]
   options[:log_file] = File::expand_path opts["--log-file"] if opts["--log-file"]
   options[:log_level] = opts["--log-level"] if opts["--log-level"]
@@ -63,15 +63,16 @@ begin
   options[:cache] = opts["--cache"].to_i * 3600 if opts["--cache"].to_i > 0
   options[:default_aggregation_method] = opts["--aggregation-method"].to_sym if opts["--aggregation-method"]
 
-  logger = Logger.new options[:log_file] ||  STDOUT
+  logger = Logger.new options[:log_file] || STDOUT
   logger.level= Logger.const_get options[:log_level].to_s.upcase
   Process.daemon if options[:daemonize]
   GraphiteApiMiddleware::Server.start options, logger
 rescue Docopt::Exit => e
   puts e.message
 rescue Interrupt
-  logger.info "Shutting down..."
-  Zscheduler.stop
+  logger.info "Shutting down..." if defined? logger
 rescue StandardError => e
   puts (Docopt::Exit.new e.message).message
+ensure
+  GraphiteApiMiddleware::Server.stop
 end
