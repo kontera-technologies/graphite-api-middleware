@@ -1,9 +1,16 @@
+# OS/IDE files
+.DS_store
+.idea
+
+# Build files
+Gemfile.lock
 /.bundle/
+/coverage/
 /.yardoc
 /_yardoc/
-/coverage/
 /doc/
 /pkg/
 /spec/reports/
+
+# Other
 /tmp/
-Gemfile.lock
