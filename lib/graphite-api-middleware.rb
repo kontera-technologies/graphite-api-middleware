@@ -55,7 +55,9 @@ module GraphiteApiMiddleware
     private :peername
 
     def self.default_options
-      GraphiteAPI::Client.default_options.merge interval: 60, pid: '/var/run/graphite-api-middleware.pid'
+      GraphiteAPI::Client.default_options.
+        tap {|opts| opts.delete :backends}.
+        merge interval: 60, pid: '/var/run/graphite-api-middleware.pid'
     end
 
     def self.start options, logger

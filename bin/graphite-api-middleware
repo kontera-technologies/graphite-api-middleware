@@ -52,7 +52,7 @@ begin
 
   raise "Invalid aggregation method. Valid values are sum, avg or replace." unless ["sum", "avg", "replace", nil].include? opts["--aggregation-method"]
 
-  options[:backends] = opts["<graphite-uri>"]
+  options[:graphite] = opts["<graphite-uri>"]
   options[:port] = opts["--port"] if opts["--port"]
   options[:log_file] = File::expand_path opts["--log-file"] if opts["--log-file"]
   options[:log_level] = opts["--log-level"] if opts["--log-level"]
